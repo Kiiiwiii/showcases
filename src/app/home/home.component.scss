@@ -1,3 +1,31 @@
-// Copyright (c) 2016 VMware, Inc. All Rights Reserved.
-// This software is released under MIT license.
-// The full license information can be found in LICENSE in the root directory of this project.
+:host{
+}
+.welcome{
+    text-align: center;
+}
+.logout-button{
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.container{
+    width: 80%;
+    margin: 10px auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-around;
+}
+.container__text{
+    width: 40%;
+}
+.container__title{
+    width: 20%;
+}
+.container__button{
+    width: 20%;
+}
+
+.datagrid-host{
+    margin: 10px auto;
+    width: 80%;
+}

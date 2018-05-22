@@ -1,0 +1,21 @@
+<h3 class="title">You need to type a name</h3>
+<div class="login-group">
+  <input [(ngModel)]="username" style="width: 70%" type="text" placeholder="Nickname" size="45">
+  <button style="width: 20%"class="btn btn-success-outline" (click)="signIn()" [disabled]="!username">Enter</button>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Already Registered ?</th>
+            <th>user name</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let user of registeredUsers">
+          <td>√</td>
+          <td>{{user.username}}</td>
+        </tr>
+    </tbody>
+</table>
+
