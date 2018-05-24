@@ -3,6 +3,7 @@
 declare namespace TodoList{
   interface User {
     username: string,
+    registeredTime: Date,
     id: number
   }
   interface TodoItem {

@@ -5,6 +5,7 @@
  */
 import { Component, OnInit } from "@angular/core";
 import { IndexDbService } from "../core/index-db.service";
+import { Router } from "@angular/router";
 
 @Component({
     selector: 'app-home',
@@ -17,10 +18,13 @@ export class HomeComponent implements OnInit {
     todoTitle: string;
     todoText: string;
 
-    currentUser: string;
-    constructor(private indexedDBService: IndexDbService) {}
+    currentUser: string | null;
+    constructor(private indexedDBService: IndexDbService,
+      private router: Router) {}
     ngOnInit(): void {
-      this.currentUser = this.indexedDBService.currentUser;
+      this.indexedDBService.currentUser.subscribe(currentUser => {
+        this.currentUser = currentUser;
+      });
       this.indexedDBService.todolist.subscribe(todolist => {
         this.todos = todolist;
       })
@@ -42,5 +46,10 @@ export class HomeComponent implements OnInit {
 
     deleteItem(todo: TodoList.TodoItem) {
       this.indexedDBService.deleteTodoItem(todo);
+    }
+
+    logout() {
+      this.indexedDBService.setCurrentUser('');
+      this.router.navigate(['login']);
     }
 }

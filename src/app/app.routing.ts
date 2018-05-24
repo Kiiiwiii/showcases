@@ -8,11 +8,12 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
+import { AppRoutingGuard } from './app.routing.guard';
 
 
 export const ROUTES: Routes = [
     {path: '', redirectTo: 'login', pathMatch: 'full'},
-    {path: 'home', component: HomeComponent},
+    {path: 'home', component: HomeComponent, canActivate: [AppRoutingGuard]},
     {path: 'login', component: LoginComponent}
 ];
 

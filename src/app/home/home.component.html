@@ -2,7 +2,7 @@
 <h3 class="welcome">
     Welcome, {{currentUser}}
 </h3>
-<button class="btn btn-danger-outline btn-sm logout-button">logout</button>
+<button class="btn btn-danger-outline btn-sm logout-button" (click)="logout()">logout</button>
 
 <div class="container">
     <input [(ngModel)]="todoTitle" class="container__title" placeholder="title" #title>
@@ -23,7 +23,7 @@
     <clr-dg-row *ngFor="let todo of todos">
         <clr-dg-cell>{{todo.title}}</clr-dg-cell>
         <clr-dg-cell>{{todo.text}}</clr-dg-cell>
-        <clr-dg-cell>{{todo.date | date}}</clr-dg-cell>
+        <clr-dg-cell>{{todo.date | date: 'MM-dd HH:mm'}}</clr-dg-cell>
         <button class="btn btn-warning-outline" (click)="deleteItem(todo)">delete</button>
     </clr-dg-row>
 

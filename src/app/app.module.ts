@@ -9,6 +9,7 @@ import { ROUTING } from "./app.routing";
 import { HomeComponent } from "./home/home.component";
 import { LoginComponent } from './login/login.component';
 import { CoreModule } from "./core/core.module";
+import { AppRoutingGuard } from "./app.routing.guard";
 
 @NgModule({
     declarations: [
@@ -25,7 +26,7 @@ import { CoreModule } from "./core/core.module";
         ROUTING,
         CoreModule
     ],
-    providers: [],
+    providers: [AppRoutingGuard],
     bootstrap: [AppComponent]
 })
 export class AppModule {

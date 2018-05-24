@@ -24,10 +24,16 @@ export class IndexDbService {
     // TODO: + localStorage 实现
     this.currentUserSubject = new BehaviorSubject('');
     this.currentUser = this.currentUserSubject.asObservable();
+    // if there is currentUser, set currentUser
+    if (localStorage.getItem('currentUser')) {
+      this.currentUserSubject.next(localStorage.getItem('currentUser'));
+    }
+
     // database version change
     idb.open('app', 1, upgradeDB => {
         upgradeDB.createObjectStore('users', {
-            keyPath: 'username'
+            keyPath: 'id',
+            autoIncrement: true
         });
         // todolist table
         const todoListTable = upgradeDB.createObjectStore('todoList', { keyPath: 'id', autoIncrement: true });
@@ -35,12 +41,20 @@ export class IndexDbService {
     })
   }
   getRegisteredUsers() {
+    const resultArr = [];
     idb.open('app', 1).then(db => {
       const tx = db.transaction('users', 'readonly');
       const store = tx.objectStore('users');
-      return store.getAll();
-    }).then(users => {
-      this.registeredUsersSubject.next(users);
+      store.openCursor(null, 'prev').then(function iterateCursor(cursor) {
+        if (!cursor) {
+          return;
+        }
+        resultArr.push(cursor.value);
+        return cursor.continue().then(iterateCursor);
+      });
+      return tx.complete;
+    }).then(() => {
+      this.registeredUsersSubject.next(resultArr);
     });
   }
   isUserAlreadyExist(username: string): Promise<boolean> {
@@ -56,58 +70,72 @@ export class IndexDbService {
       return users.length === 0 ? false : true;
     });
   }
-  addNewUser(name: string) {
-    let tx, store;
+  addNewUser(name: string, time: Date) {
+    let addNewUserDBThread;
     return idb.open('app', 1).then(db => {
-      tx = db.transaction('users', 'readwrite');
-      store = tx.objectStore('users');
-      return store.add({username: name});
-    }).then(user => {
-      return store.getAll();
-    }).then(users => {
-      this.registeredUsersSubject.next(users);
+      addNewUserDBThread = db;
+      const tx = db.transaction('users', 'readwrite');
+      const store = tx.objectStore('users');
+      return store.add({username: name, registeredTime: time});
+    }).then(() => {
+      addNewUserDBThread.close();
+      // get user list
+      this.getRegisteredUsers();
     });
   }
 
   setCurrentUser(username: string) {
-    this._currentUser = username;
+    if (!username) {
+      localStorage.removeItem('currentUser');
+    } else {
+      localStorage.setItem('currentUser', username);
+    }
+    this.currentUserSubject.next(localStorage.getItem('currentUser'));
   }
 
   getTodoList(username: string) {
+    const resultArr = [];
     idb.open('app', 1).then(db => {
       const tx = db.transaction('todoList', 'readonly');
       const store = tx.objectStore('todoList');
       const usernameIndex = store.index('usernameIndex');
-      return usernameIndex.getAll(username);
-    }).then(todolist => {
-      this.todolistSubject.next(todolist);
+      usernameIndex.openCursor(username, 'prev').then(function iterateCursor(cursor) {
+        if (!cursor) {
+          return;
+        }
+        resultArr.push(cursor.value);
+        return cursor.continue().then(iterateCursor);
+      });
+      return tx.complete;
+    }).then(() => {
+      this.todolistSubject.next(resultArr);
     });
   }
   addTodoItem(todoItem: TodoList.TodoItem) {
-    let store, tx;
+    let addItemDBThread;
     idb.open('app', 1).then(db => {
-      tx = db.transaction('todoList', 'readwrite');
-      store = tx.objectStore('todoList');
+      addItemDBThread = db;
+      const tx = db.transaction('todoList', 'readwrite');
+      const store = tx.objectStore('todoList');
       return store.add(todoItem);
     }).then(item => {
-      const usernameIndex = store.index('usernameIndex');
-      return usernameIndex.getAll(todoItem.username);
-    }).then(todolist => {
-      this.todolistSubject.next(todolist);
+      addItemDBThread.close();
+      // get todolist
+      this.getTodoList(todoItem.username);
     });
   }
 
   deleteTodoItem(todoItem: TodoList.TodoItem) {
-    let store, tx;
+    let deleteItemDBThread;
     idb.open('app', 1).then(db => {
-      tx = db.transaction('todoList', 'readwrite');
-      store = tx.objectStore('todoList');
+      deleteItemDBThread = db;
+      const tx = db.transaction('todoList', 'readwrite');
+      const store = tx.objectStore('todoList');
       return store.delete(todoItem.id);
     }).then(item => {
-      const usernameIndex = store.index('usernameIndex');
-      return usernameIndex.getAll(todoItem.username);
-    }).then(todolist => {
-      this.todolistSubject.next(todolist);
+      deleteItemDBThread.close();
+      // get todolist
+      this.getTodoList(todoItem.username);
     });
   }
 }

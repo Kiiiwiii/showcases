@@ -1,21 +1,26 @@
-<h3 class="title">You need to type a name</h3>
-<div class="login-group">
-  <input [(ngModel)]="username" style="width: 70%" type="text" placeholder="Nickname" size="45">
-  <button style="width: 20%"class="btn btn-success-outline" (click)="signIn()" [disabled]="!username">Enter</button>
+<h3 class="title" *ngIf="!(currentUser | async)">You need to type a new name or choose a registered user</h3>
+<div class="login-group" *ngIf="!(currentUser | async)">
+    <input [(ngModel)]="usernameWaitForRegistration" style="width: 70%" type="text" placeholder="Nickname" size="45">
+    <button style="width: 20%" class="btn btn-success-outline" (click)="signIn()" [disabled]="!usernameWaitForRegistration">Enter</button>
 </div>
+<div *ngIf="(currentUser | async)" >
+    <h3 class="title">You are signed in as {{currentUser | async}}</h3>
+    <button class="btn btn-outline logout-button" style="top: 30px;" (click)="directToList()">to list</button>
+    <button class="btn btn-danger-outline btn-sm logout-button" (click)="logout()">logout</button>
+</div>
+
 
 <table class="table">
     <thead>
         <tr>
-            <th>Already Registered ?</th>
             <th>user name</th>
+            <th>registered time</th>
         </tr>
     </thead>
     <tbody>
         <tr *ngFor="let user of registeredUsers">
-          <td>√</td>
-          <td>{{user.username}}</td>
+            <td>{{user.username}}</td>
+            <td>{{user.registeredTime | date: 'MM-dd HH:mm'}}</td>
         </tr>
     </tbody>
 </table>
-
